@@ -1,18 +1,31 @@
 {
+
   "checkinItems": false,
   "acquisitionMethod": "Approval Plan",
   "alerts": [],
   "claims": [],
-  "contributors": [],
+  "contributors": [
+    {
+      "contributor": "Mbah, Emmanuel M",
+      "contributorNameTypeId": "2e48e713-17f3-4c13-a9f8-23845bb210aa"
+    }
+  ],
   "cost": {
     "listUnitPrice": 1.0,
     "currency": "USD",
+    "discount": 10.0,
     "discountType": "percentage",
     "quantityPhysical": 1,
-    "poLineEstimatedPrice": 1.0
+    "poLineEstimatedPrice": 0.9
   },
   "details": {
-    "productIds": [],
+    "productIds": [
+      {
+        "productId": "9781138239555",
+        "productIdType": "8261054f-be78-422d-bd51-4ed9f33c3422",
+        "qualifier": ""
+      }
+    ],
     "subscriptionInterval": 0
   },
   "eresource": {
@@ -44,7 +57,9 @@
     "materialSupplier": "#(globalVendorId)",
     "volumes": []
   },
-  "purchaseOrderId": "",
+  "publicationDate": "2017",
+  "publisher": "Routledge Taylor & Francis Group",
+  "purchaseOrderId": "#(purchaseOrderId)",
   "receiptStatus": "Pending",
   "reportingCodes": [],
   "source": "User",

@@ -4,6 +4,7 @@ Feature: Global variables
     * def globalFiscalYearId = 'ac2164c7-ba3d-1bc2-a12c-e35ceccbfaf2'
     * def globalLedgerId = '5e4fbdab-f1b1-4be8-9c33-d3c41ec9a695'
     * def globalFundId = '5e4fbdab-f1b1-4be8-9c33-d3c41ec9a696'
+    * def globalFundCode = 'TST-FND'
     * def globalBudgetId = '5e4fbdab-f1b1-4be8-9c33-d3c41ec9a697'
     * def globalFundId2 = '5e4fbdab-f1b1-4be8-9c33-d3c41ec9a698'
     * def globalBudgetId2 = '5e4fbdab-f1b1-4be8-9c33-d3c41ec9a658'
