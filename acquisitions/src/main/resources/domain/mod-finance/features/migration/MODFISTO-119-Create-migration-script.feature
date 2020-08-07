@@ -19,8 +19,6 @@ Feature: Test migration
     * def fundIdDonor = "6b86dcac-2f8c-4ad3-a0ab-41d15354c151"
     * def fundIdRecipient = "6b86dcac-2f8c-4ad3-a0ab-41d15354c152"
     * def fundIdDonorRecipient = "6b86dcac-2f8c-4ad3-a0ab-41d15354c153"
-    * def fundIdAnotherFiscalYear = "6b86dcac-2f8c-4ad3-a0ab-41d15354c154"
-    * def fundIdAnotherFiscalYear1 = "6b86dcac-2f8c-4ad3-a0ab-41d15354c155"
 
     * def budgetIdDonor = "6b86dcac-2f8c-4ad3-a0ab-41d15354c156"
     * def budgetIdRecipient = "6b86dcac-2f8c-4ad3-a0ab-41d15354c157"
@@ -63,7 +61,13 @@ Feature: Test migration
       | fundIdDonorRecipient     |fundIdRecipient      | 1102    |globalFiscalYearId    |
 
 
-  Scenario: Get budget
-    Given path '/finance/budgets/', budgetIdDonor
+  Scenario Outline: Get budget
+    Given path '/finance/budgets/', <budgetId>
     When method GET
     Then status 200
+    #And match response.netTransfer == <netTransferAmount>
+    Examples:
+      | budgetId              |  netTransferAmount |
+      |budgetIdDonor          |   -2201.5          |
+      |budgetIdDonorRecipient |   398.3            |
+      |budgetIdRecipient      |   1803.2           |
