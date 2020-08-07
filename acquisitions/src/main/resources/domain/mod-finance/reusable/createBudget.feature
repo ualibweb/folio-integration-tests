@@ -13,7 +13,7 @@ Feature: budget
     """
     {
       "id": "#(id)",
-      "budgetStatus": "Active",
+      "budgetStatus": "#(budgetStatus)",
       "fundId": "#(fundId)",
       "name": "#(id)",
       "fiscalYearId":"#(fiscalYearId)",

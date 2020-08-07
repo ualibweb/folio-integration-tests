@@ -23,6 +23,23 @@ Feature: global finances
     When method POST
     Then status 201
 
+  Scenario: create next fiscal year
+    Given path 'finance/fiscal-years'
+    And request
+    """
+    {
+      "id": "ac2164c7-ba3d-1bc2-a12c-e35ceccbfaf3",
+      "name": "TST-Fiscal Year 2021",
+      "code": "FY2021",
+      "description": "January 1 - December 30",
+      "periodStart": "2021-01-01T00:00:00Z",
+      "periodEnd": "2021-12-30T23:59:59Z",
+      "series": "FY"
+    }
+    """
+    When method POST
+    Then status 201
+
   Scenario: create ledgers
     Given path 'finance-storage/ledgers'
     And request

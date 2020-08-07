@@ -4,7 +4,8 @@ Feature: transaction
     * url baseUrl
     * def poLineId = callonce uuid
 
-  Scenario: createTransaction
+  @CreateTransaction
+  Scenario: Create transaction
     * def fiscalYearId = karate.get('fiscalYearId', globalFiscalYearId)
 
     Given path 'finance-storage/transactions'
@@ -30,6 +31,26 @@ Feature: transaction
         "reEncumber": false
        }
     }
+    """
+    When method POST
+    Then status 201
+
+  @CreateTransferTransaction
+  Scenario: Create transfer transaction
+    * def fiscalYearId = karate.get('fiscalYearId', globalFiscalYearId)
+
+    Given path 'finance/transfers'
+    And request
+    """
+      {
+        "fromFundId": "#(fromFundId)",
+        "toFundId": "#(toFundId)",
+        "amount": "#(amount)",
+        "fiscalYearId": "#(fiscalYearId)",
+        "currency": "USD",
+        "transactionType": "Transfer",
+        "source": "User",
+      }
     """
     When method POST
     Then status 201
