@@ -3,7 +3,7 @@ Feature: Test migration
   Background:
     * url baseUrl
     # uncomment below line for development
-    * callonce dev {tenant: 'test_finance'}
+    * callonce dev {tenant: 'diku_admin'}
     * callonce login testAdmin
     * def okapitokenAdmin = okapitoken
 
@@ -39,9 +39,6 @@ Feature: Test migration
       | fundIdDonor              | budgetIdDonor             |globalFiscalYearId     |30000    |'Active'    |
       | fundIdRecipient          | budgetIdRecipient         |globalFiscalYearId     |130      |'Active'    |
       | fundIdDonorRecipient     | budgetIdDonorRecipient    |globalFiscalYearId     |20000    |'Active'    |
-      | fundIdAnotherFiscalYear  | budgetIdAnotherFiscalYear |globalNextFiscalYearId |5000     |'Planned'   |
-      | fundIdAnotherFiscalYear1 | budgetIdAnotherFiscalYear1|globalNextFiscalYearId |7000     |'Planned'   |
-
 
   Scenario Outline: create transfer transaction with fromFundId <fromFundId>, toFundId <toFundId>, amount <amount>, fiscalYearId <fiscalYearId>
     * def fromFundId = <fromFundId>
