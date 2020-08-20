@@ -11,6 +11,9 @@ stages:
     - sourceName: integration-tests
       sourceKey: environment
       targetKey: ENVIRONMENT
+    cpuRequest: 100m
+    memoryLimit: 1Gi
+    memoryRequest: 500Mi      
   - runScriptConfig:
       image: amazon/aws-cli
       shellScript: aws s3 cp ./target/cucumber-html-reports s3://folio-gulfstream.s3.amazonaws.com/
