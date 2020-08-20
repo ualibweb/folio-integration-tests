@@ -31,17 +31,5 @@
             <artifactId>json-simple</artifactId>
             <version>1.1.1</version>
         </dependency>
-        <dependency>
-            <groupId>com.bazaarvoice.maven.plugins</groupId>
-            <artifactId>s3-upload-maven-plugin</artifactId>
-            <version>1.4</version>
-            <scope>test</scope>
-            <configuration>
-                <bucketName>folio-gulfstream</bucketName>
-                <source>target/cucumber-html-reports</source>
-                <destination>cucumber-html-reports</destination>
-                <recursive>true</recursive>
-            </configuration>
-        </dependency>
     </dependencies>
 </project>

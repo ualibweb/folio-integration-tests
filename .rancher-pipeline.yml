@@ -3,7 +3,7 @@ stages:
   steps:
   - runScriptConfig:
       image: maven:3-openjdk-8
-      shellScript: mvn test -pl ${PROJECT} -Dkarate.env=${ENVIRONMENT} && ls
+      shellScript: mvn test -pl ${PROJECT} -Dkarate.env=${ENVIRONMENT}
     envFrom:
     - sourceName: integration-tests
       sourceKey: project
@@ -21,6 +21,6 @@ stages:
   steps:
   - runScriptConfig:
       image: amazon/aws-cli
-      shellScript: ls
+      shellScript: ls mod-oai-pmh
 timeout: 60
 notification: {}
