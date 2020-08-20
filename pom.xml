@@ -57,6 +57,25 @@
           <testFailureIgnore>true</testFailureIgnore>
         </configuration>
       </plugin>
+     <!-- <plugin>
+          <groupId>com.bazaarvoice.maven.plugins</groupId>
+          <artifactId>s3-upload-maven-plugin</artifactId>
+          <version>1.4</version>
+          <executions>
+              <execution>
+                  <goals>
+                      <goal>s3-upload</goal>
+                  </goals>
+                  <phase>post-integration-test</phase>
+                  <configuration>
+                      <bucketName>folio-gulfstream</bucketName>
+                      <source>mod-oai-pmh/target/cucumber-html-reports</source>
+                      <destination>cucumber-html-reports</destination>
+                      <recursive>true</recursive>
+                  </configuration>
+              </execution>
+          </executions>
+      </plugin> --> 
     </plugins>
   </build>
 

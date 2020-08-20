@@ -11,16 +11,10 @@ stages:
     - sourceName: integration-tests
       sourceKey: environment
       targetKey: ENVIRONMENT
-    cpuRequest: 100m
-    memoryRequest: 500Mi
-    memoryLimit: 1Gi
-  - runScriptConfig:
-      image: amazon/aws-cli
-      shellScript: ls mod-oai-pmh
 - name: S3 upload
   steps:
   - runScriptConfig:
       image: amazon/aws-cli
-      shellScript: ls mod-oai-pmh
+      shellScript: aws s3 cp mod-oai-pmh/target/cucumber-html-reports s3://folio-gulfstream.s3.amazonaws.com/ --recursive
 timeout: 60
 notification: {}
