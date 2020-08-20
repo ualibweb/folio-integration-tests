@@ -67,7 +67,7 @@
           <destination>cucumber-html-reports</destination>
           <recursive>true</recursive>
         </configuration>
-    </plugin>
+      </plugin>
     </plugins>
   </build>
 
