@@ -16,7 +16,7 @@ stages:
     memoryLimit: 1Gi
   - runScriptConfig:
       image: amazon/aws-cli
-      shellScript: ls
+      shellScript: ls mod-oai-pmh
 - name: S3 upload
   steps:
   - runScriptConfig:
