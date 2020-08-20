@@ -57,17 +57,6 @@
           <testFailureIgnore>true</testFailureIgnore>
         </configuration>
       </plugin>
-      <plugin>
-        <groupId>com.bazaarvoice.maven.plugins</groupId>
-        <artifactId>s3-upload-maven-plugin</artifactId>
-        <version>1.4</version>
-        <configuration>
-          <bucketName>folio-gulfstream</bucketName>
-          <source>./target/cucumber-html-reports</source>
-          <destination>cucumber-html-reports</destination>
-          <recursive>true</recursive>
-        </configuration>
-      </plugin>
     </plugins>
   </build>
 
