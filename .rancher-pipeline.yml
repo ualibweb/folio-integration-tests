@@ -15,6 +15,6 @@ stages:
   steps:
   - runScriptConfig:
       image: amazon/aws-cli
-      shellScript: aws s3 cp mod-oai-pmh/target/cucumber-html-reports s3://folio-gulfstream.s3.amazonaws.com/ --recursive
+      shellScript: aws s3 cp mod-oai-pmh/target/cucumber-html-reports s3://folio-gulfstream/cucumber-html-reports --recursive
 timeout: 60
 notification: {}
