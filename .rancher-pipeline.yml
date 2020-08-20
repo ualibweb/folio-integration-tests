@@ -17,5 +17,10 @@ stages:
   - runScriptConfig:
       image: amazon/aws-cli
       shellScript: ls
+- name: S3 upload
+  steps:
+  - runScriptConfig:
+      image: amazon/aws-cli
+      shellScript: ls
 timeout: 60
 notification: {}
