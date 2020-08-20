@@ -3,7 +3,7 @@ stages:
   steps:
   - runScriptConfig:
       image: maven:3-openjdk-8
-      shellScript: mvn test -pl $project -Dkarate.env=$environment && ls
+      shellScript: mvn test -pl ${PROJECT} -Dkarate.env=${ENVIRONMENT} && ls
     envFrom:
     - sourceName: integration-tests
       sourceKey: project
