@@ -1,20 +1,19 @@
 stages:
-  - name: Run tests
-    steps:
-      - runScriptConfig:
-          image: maven:3-openjdk-8
-          shellScript: sh ./runtests.sh ${PROJECT} ${ENVIRONMENT}
-        envFrom:
-          - sourceName: integration-tests
-            sourceKey: project
-            targetKey: PROJECT
-          - sourceName: integration-tests
-            sourceKey: environment
-            targetKey: ENVIRONMENT
-  - name: Post to S3
-    steps:
-      - runScriptConfig:
-          image: amazon/aws-cli
-          shellScript: ls && aws s3 cp ./target/cucumber-html-reports s3://folio-gulfstream.s3.amazonaws.com/ --recursive
+- name: Run tests
+  steps:
+  - runScriptConfig:
+      image: maven:3-openjdk-8
+      shellScript: sh ./runtests.sh ${PROJECT} ${ENVIRONMENT}
+    envFrom:
+    - sourceName: integration-tests
+      sourceKey: project
+      targetKey: PROJECT
+    - sourceName: integration-tests
+      sourceKey: environment
+      targetKey: ENVIRONMENT
+  - runScriptConfig:
+      image: amazon/aws-cli
+      shellScript: aws s3 cp ./target/cucumber-html-reports s3://folio-gulfstream.s3.amazonaws.com/
+        --recursive
 timeout: 60
 notification: {}
