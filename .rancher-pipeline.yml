@@ -11,5 +11,10 @@ stages:
           - sourceName: integration-tests
             sourceKey: environment
             targetKey: ENVIRONMENT
+  - name: Post to S3
+    steps:
+      - runScriptConfig:
+          image: amazon/aws-cli
+          shellScript: aws s3 cp target/cucumber-html-reports s3://folio-gulfstream.s3.amazonaws.com/ --recursive
 timeout: 60
 notification: {}
