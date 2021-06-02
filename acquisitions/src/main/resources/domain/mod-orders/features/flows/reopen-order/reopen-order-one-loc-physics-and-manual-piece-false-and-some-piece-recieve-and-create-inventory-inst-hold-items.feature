@@ -1,4 +1,4 @@
-Feature: open-order-one-location-physics-and-manual-piece-false-and-create-inventory-instance-holdings-items.
+Feature: reopen-order-one-loc-physics-and-manual-piece-false-and-some-piece-recieve-and-create-inventory-inst-hold-items.
 
   Background:
     * url baseUrl
@@ -76,7 +76,7 @@ Feature: open-order-one-location-physics-and-manual-piece-false-and-create-inven
     And request orderResponse
     When method PUT
     Then status 204
-    * call pause(1000)
+    * call pause(3000)
 
   #Precondition :
     #Manual add pieces is FALSE - means we need to create pieces from code
@@ -118,9 +118,11 @@ Feature: open-order-one-location-physics-and-manual-piece-false-and-create-inven
     * def itemId1 = item1.id
     * def itemId2 = item2.id
     And match item1.effectiveLocation.id == "#(globalLocationsId)"
+    And match item1.status.name == "On order"
     And match item2.effectiveLocation.id == "#(globalLocationsId)"
     And match item1.holdingsRecordId == "#(poLineHoldingId)"
     And match item2.holdingsRecordId == "#(poLineHoldingId)"
+    And match item2.status.name == "On order"
 
     Given path 'orders-storage/pieces'
     And param query = 'poLineId==' + poLineId
@@ -138,6 +140,38 @@ Feature: open-order-one-location-physics-and-manual-piece-false-and-create-inven
 
 
   #Holding must be created by unique pair : locationId and instanceId
+    Given path 'orders/check-in'
+    * def checkIn = read('classpath:samples/mod-orders/check-in/check-in-one.json')
+    * set checkIn.toBeCheckedIn[0].poLineId = poLineId
+    * set checkIn.toBeCheckedIn[0].checkInPieces[0].id = piece1.id
+    * set checkIn.toBeCheckedIn[0].checkInPieces[0].locationId = piece1.locationId
+    And request checkIn
+    When method POST
+    Then status 200
+    And match $.totalRecords == 1
+    And match $.receivingResults[0].processedSuccessfully == 1
+    And match $.receivingResults[0].receivingItemResults[0].processingStatus.type == "success"
+
+     #Retrieve order line items location
+    Given path 'inventory/items'
+    And param query = 'purchaseOrderLineIdentifier==' + poLineId
+    When method GET
+    Then status 200
+    * def items = $.items
+    And match $.totalRecords == 2
+    * def item1 = karate.jsonPath(response, '$.items[*][?(@.status.name == "In process")]')[0]
+    * def item2 = karate.jsonPath(response, '$.items[*][?(@.status.name == "On order")]')[0]
+    * def itemId1 = item1.id
+    * def itemId2 = item2.id
+    And match item1.effectiveLocation.id == "#(globalLocationsId)"
+    And match item1.status.name == "In process"
+    And match item2.effectiveLocation.id == "#(globalLocationsId)"
+    And match item1.holdingsRecordId == "#(poLineHoldingId)"
+    And match item2.holdingsRecordId == "#(poLineHoldingId)"
+    And match item2.status.name == "On order"
+
+
+    #Holding must be created by unique pair : locationId and instanceId
     Given path 'holdings-storage/holdings'
     And param query = 'instanceId==' + instanceId
     When method GET
@@ -145,6 +179,75 @@ Feature: open-order-one-location-physics-and-manual-piece-false-and-create-inven
     * def holdingsRecords = $.holdingsRecords
     And match $.totalRecords == 1
     And match holdingsRecords[0] contains {"id": "#(poLineHoldingId)", "instanceId": "#(instanceId)", "permanentLocationId": "#(globalLocationsId)"}
+
+
+  Scenario: Close order and release encumbrances
+    # ============= get order to close ===================
+    Given path 'orders-storage/purchase-orders', orderId
+    And retry until response.workflowStatus == "Open"
+    When method GET
+    Then status 200
+    * def orderResponse = $
+    * remove orderResponse.compositePoLines
+    * print "PRINT " + orderResponse
+    * set orderResponse.workflowStatus = "Closed"
+
+    # ============= update order to close ===================
+    Given path 'orders/composite-orders', orderId
+    And request orderResponse
+    When method PUT
+    Then status 204
+
+    Given path 'orders/composite-orders', orderId
+    And retry until response.workflowStatus == "Closed"
+    When method GET
+    Then status 200
+    * match $.workflowStatus == "Closed"
+
+  Scenario: Reopen the order
+    Given path 'orders/composite-orders', orderId
+    When method GET
+    Then status 200
+    And match $.workflowStatus == 'Closed'
+
+    * def orderResponse = $
+    * set orderResponse.workflowStatus = 'Open'
+
+    Given path 'orders/composite-orders', orderId
+    And request orderResponse
+    When method PUT
+    Then status 204
+
+  Scenario: After order is closed, then received Piece/Item status should not be changed
+       #Retrieve order line items location
+    Given path 'inventory/items'
+    And param query = 'purchaseOrderLineIdentifier==' + poLineId
+    When method GET
+    Then status 200
+    * def items = $.items
+    And match $.totalRecords == 2
+    * def item1 = karate.jsonPath(response, '$.items[*][?(@.status.name == "In process")]')[0]
+    * def item2 = karate.jsonPath(response, '$.items[*][?(@.status.name == "On order")]')[0]
+    * def itemId1 = item1.id
+    * def itemId2 = item2.id
+    And match item1.effectiveLocation.id == "#(globalLocationsId)"
+    And match item1.status.name == "In process"
+    And match item2.effectiveLocation.id == "#(globalLocationsId)"
+    And match item2.status.name == "On order"
+
+    Given path 'orders-storage/pieces'
+    And param query = 'poLineId==' + poLineId
+    When method GET
+    Then status 200
+    * def pieces = $.pieces
+    #Piece must contain link on location, poLine, title and item in inventory
+    #Quantity of the piece must be the same with poLine physical quantity
+    And match $.totalRecords == 2
+    * def piece1 = karate.jsonPath(response, '$.pieces[*][?(@.itemId == "' + itemId1 + '")]')[0]
+    * def piece2 = karate.jsonPath(response, '$.pieces[*][?(@.itemId == "' + itemId2 + '")]')[0]
+    #Piece after creation must be "Expected"
+    And match piece1 contains {"locationId": "#(globalLocationsId)", "poLineId": "#(poLineId)", "receivingStatus": "Received"}
+    And match piece2 contains {"locationId": "#(globalLocationsId)", "poLineId": "#(poLineId)", "receivingStatus": "Expected"}
 
   Scenario: delete poline
     Given path 'orders/order-lines', poLineId

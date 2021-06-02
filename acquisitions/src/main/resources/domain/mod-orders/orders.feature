@@ -100,17 +100,14 @@ Feature: mod-orders integration tests
   Scenario: Should open order with polines having the same fund distributions
     Given call read('features/open-order-with-the-same-fund-distributions.feature')
 
-#  Scenario: Check pieces item holdings when pol multy location only change
-#    Given call read('features/check-pieces-item-holdings-when-pol-multy-location-only-change.feature')
-
-#  Scenario: Check pieces item holdings when pol one location only change
-#    Given call read('features/check-pieces-item-holdings-when-pol-one-location-only-change.feature')
-
   Scenario: Open order flows verification
     Given call read('features/flows/open-order/open-order.feature')
 
   Scenario: Close order flows verification
     Given call read('features/flows/close-order/close-order.feature')
+
+  Scenario: Reopen order flows verification
+    Given call read('features/flows/reopen-order/reopen-order.feature')
 
   Scenario: wipe data
     Given call read('classpath:common/destroy-data.feature')

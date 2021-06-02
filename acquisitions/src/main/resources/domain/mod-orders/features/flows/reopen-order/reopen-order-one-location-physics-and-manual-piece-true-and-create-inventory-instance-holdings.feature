@@ -1,36 +1,23 @@
-Feature: open-order-one-location-mixed-and-manual-piece-false-and-create-inventory-instance-holdings-items.
+@parallel=false
+Feature: reopen-order-one-location-physics-and-manual-piece-true-and-create-inventory-instance-holdings.
 
   Background:
     * url baseUrl
-    # uncomment below line for development
     #* callonce dev {tenant: 'test_orders'}
-    * callonce login testAdmin
+    * callonce loginAdmin testAdmin
     * def okapitokenAdmin = okapitoken
-    * print okapitokenAdmin
-
-    * callonce login testUser
+    * callonce loginRegularUser testUser
     * def okapitokenUser = okapitoken
-
-    * def headersUser = { 'Content-Type': 'application/json', 'x-okapi-token': '#(okapitokenUser)', 'Accept': 'application/json'  }
     * def headersAdmin = { 'Content-Type': 'application/json', 'x-okapi-token': '#(okapitokenAdmin)', 'Accept': 'application/json'  }
-
+    * def headersUser = { 'Content-Type': 'application/json', 'x-okapi-token': '#(okapitokenUser)', 'Accept': '*/*'  }
     * configure headers = headersUser
 
-    # load global variables
     * callonce variables
 
     * def orderId = callonce uuid1
     * def poLineId = callonce uuid2
 
-    * def fundId = callonce uuid3
-    * def budgetId = callonce uuid4
-
     * configure retry = { count: 4, interval: 1000 }
-
-
-  Scenario: Create finances
-    * call createFund { 'id': '#(fundId)'}
-    * call createBudget { 'id': '#(budgetId)', 'allocated': 10000, 'fundId': '#(fundId)'}
 
   Scenario: Create One-time order
     Given path 'orders/composite-orders'
@@ -48,13 +35,13 @@ Feature: open-order-one-location-mixed-and-manual-piece-false-and-create-invento
   Scenario: Create order line
     Given path 'orders/order-lines'
 
-    * def orderLine = read('classpath:samples/mod-orders/orderLines/minimal-mixed-order-line.json')
+    * def orderLine = read('classpath:samples/mod-orders/orderLines/minimal-physical-order-line.json')
     * set orderLine.id = poLineId
+    * set orderLine.checkinItems = true
     * set orderLine.purchaseOrderId = orderId
     * set orderLine.cost.quantityPhysical = 2
-    * set orderLine.locations[0] = { 'quantity': '3', 'locationId': '#(globalLocationsId)', 'quantityPhysical': '2', 'quantityElectronic' : '1'}
-    * set orderLine.physical.createInventory = 'Instance, Holding, Item'
-    * set orderLine.eresource.createInventory = 'Instance, Holding, Item'
+    * set orderLine.locations[0] = { 'quantity': '2', 'locationId': '#(globalLocationsId)', 'quantityPhysical': '2'}
+    * set orderLine.physical.createInventory = 'Instance, Holding'
     And request orderLine
     When method POST
     Then status 201
@@ -66,17 +53,52 @@ Feature: open-order-one-location-mixed-and-manual-piece-false-and-create-invento
 
     * def orderResponse = $
     * set orderResponse.workflowStatus = "Open"
-    * set orderResponse.compositePoLines[*].fundDistribution[*].fundId = fundId
 
     Given path 'orders/composite-orders', orderId
     And request orderResponse
     When method PUT
     Then status 204
-    * call pause(1000)
+
+  Scenario: Close order and release encumbrances
+    # ============= get order to close ===================
+    Given path 'orders/composite-orders', orderId
+    And retry until response.workflowStatus == "Open"
+    When method GET
+    Then status 200
+    * def orderResponse = $
+    * remove orderResponse.compositePoLines
+    * set orderResponse.workflowStatus = "Closed"
+
+    # ============= update order to close ===================
+    Given path 'orders/composite-orders', orderId
+    And request orderResponse
+    When method PUT
+    Then status 204
+
+    Given path 'orders/composite-orders', orderId
+    And retry until response.workflowStatus == "Closed"
+    When method GET
+    Then status 200
+    * match $.workflowStatus == "Closed"
+
+  Scenario: Reopen the order
+    Given path 'orders/composite-orders', orderId
+    When method GET
+    Then status 200
+    And match $.workflowStatus == 'Closed'
+
+    * def orderResponse = $
+    * set orderResponse.workflowStatus = 'Open'
+
+    Given path 'orders/composite-orders', orderId
+    And request orderResponse
+    When method PUT
+    Then status 204
 
   #Precondition :
     #Manual add pieces is FALSE - means we need to create pieces from code
   Scenario: Check that instances, items, pieces, holdings were created
+    * configure headers = headersAdmin
     Given path 'orders/order-lines', poLineId
     When method GET
     Then status 200
@@ -108,17 +130,8 @@ Feature: open-order-one-location-mixed-and-manual-piece-false-and-create-invento
     When method GET
     Then status 200
     * def items = $.items
-    And match $.totalRecords == 3
-    * def itemElec1 = karate.jsonPath(response, "$.items[*][?(@.materialType.name == 'Elec')]")[0]
-    * def itemPhys1 = karate.jsonPath(response, "$.items[*][?(@.materialType.name == 'Phys')]")[0]
-    * def itemPhys2 = karate.jsonPath(response, "$.items[*][?(@.materialType.name == 'Phys')]")[1]
-    #Piece after creation must be "Expected"
-    And match itemElec1.effectiveLocation.id == "#(globalLocationsId)"
-    And match itemPhys1.effectiveLocation.id == "#(globalLocationsId)"
-    And match itemPhys2.effectiveLocation.id == "#(globalLocationsId)"
-    And match itemElec1.holdingsRecordId == "#(poLineHoldingId)"
-    And match itemPhys1.holdingsRecordId == "#(poLineHoldingId)"
-    And match itemPhys2.holdingsRecordId == "#(poLineHoldingId)"
+    And match $.totalRecords == 0
+
 
     Given path 'orders-storage/pieces'
     And param query = 'poLineId==' + poLineId
@@ -127,16 +140,9 @@ Feature: open-order-one-location-mixed-and-manual-piece-false-and-create-invento
     * def pieces = $.pieces
     #Piece must contain link on location, poLine, title and item in inventory
     #Quantity of the piece must be the same with poLine physical quantity
-    And match $.totalRecords == 3
-    * def pieceElec1 = karate.jsonPath(response, "$.pieces[*][?(@.format == 'Electronic')]")[0]
-    * def piecePhys1 = karate.jsonPath(response, "$.pieces[*][?(@.format == 'Physical')]")[0]
-    * def piecePhys2 = karate.jsonPath(response, "$.pieces[*][?(@.format == 'Physical')]")[1]
-    #Piece after creation must be "Expected"
-    And match pieceElec1 contains {"poLineId": "#(poLineId)", "titleId": "#(titleId)", "receivingStatus": "Expected"}
-    And match piecePhys1 contains {"poLineId": "#(poLineId)", "titleId": "#(titleId)", "receivingStatus": "Expected"}
-    And match piecePhys2 contains {"poLineId": "#(poLineId)", "titleId": "#(titleId)", "receivingStatus": "Expected"}
-
-  #Holding must be created by unique pair : locationId and instanceId
+    And match $.totalRecords == 0
+ 
+    #Holding must be created by unique pair : locationId and instanceId
     Given path 'holdings-storage/holdings'
     And param query = 'instanceId==' + instanceId
     When method GET

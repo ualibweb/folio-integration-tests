@@ -1,22 +1,17 @@
-Feature: Verify once poline fully paid and received order should be closed
+@parallel=false
+Feature: reopen-order-change-qty-one-loc-phys-and-manual-piece-false-and-create-inventory-instance-holdings-items
 
   Background:
     * url baseUrl
-    # uncomment below line for development
     #* callonce dev {tenant: 'test_orders'}
-    * callonce login testAdmin
+    * callonce loginAdmin testAdmin
     * def okapitokenAdmin = okapitoken
-    * print okapitokenAdmin
-
-    * callonce login testUser
+    * callonce loginRegularUser testUser
     * def okapitokenUser = okapitoken
-
-    * def headersUser = { 'Content-Type': 'application/json', 'x-okapi-token': '#(okapitokenUser)', 'Accept': 'application/json'  }
     * def headersAdmin = { 'Content-Type': 'application/json', 'x-okapi-token': '#(okapitokenAdmin)', 'Accept': 'application/json'  }
-
+    * def headersUser = { 'Content-Type': 'application/json', 'x-okapi-token': '#(okapitokenUser)', 'Accept': '*/*'  }
     * configure headers = headersUser
 
-    # load global variables
     * callonce variables
 
     * def orderId = callonce uuid1
@@ -24,7 +19,7 @@ Feature: Verify once poline fully paid and received order should be closed
 
     * configure retry = { count: 4, interval: 1000 }
 
-  Scenario: Create composite order
+  Scenario: Create One-time order
     Given path 'orders/composite-orders'
     And request
     """
@@ -43,7 +38,8 @@ Feature: Verify once poline fully paid and received order should be closed
     * def orderLine = read('classpath:samples/mod-orders/orderLines/minimal-physical-order-line.json')
     * set orderLine.id = poLineId
     * set orderLine.purchaseOrderId = orderId
-
+    * set orderLine.cost.quantityPhysical = 2
+    * set orderLine.locations[0] = { 'quantity': '2', 'locationId': '#(globalLocationsId)', 'quantityPhysical': '2'}
     And request orderLine
     When method POST
     Then status 201
@@ -61,30 +57,45 @@ Feature: Verify once poline fully paid and received order should be closed
     When method PUT
     Then status 204
 
-  Scenario: Get poLine and update payment and receipt status
-    Given path 'orders/order-lines', poLineId
+  Scenario: Close order and release encumbrances
+    # ============= get order to close ===================
+    Given path 'orders/composite-orders', orderId
+    And retry until response.workflowStatus == "Open"
     When method GET
     Then status 200
+    * def orderResponse = $
+    * remove orderResponse.compositePoLines
+    * set orderResponse.workflowStatus = "Closed"
 
-    * def poLineResponse = $
-    * set poLineResponse.paymentStatus = 'Fully Paid'
-    * set poLineResponse.receiptStatus = 'Fully Received'
-
-    Given path 'orders/order-lines', poLineId
-    And request poLineResponse
+    # ============= update order to close ===================
+    Given path 'orders/composite-orders', orderId
+    And request orderResponse
     When method PUT
     Then status 204
 
-  Scenario: Check that order closed
     Given path 'orders/composite-orders', orderId
+    And retry until response.workflowStatus == "Closed"
     When method GET
-    And retry until response.workflowStatus == 'Closed'
     Then status 200
+    * match $.workflowStatus == "Closed"
 
+  Scenario: Reopen the order
     Given path 'orders/composite-orders', orderId
     When method GET
     Then status 200
     And match $.workflowStatus == 'Closed'
+
+    * def orderResponse = $
+    * set orderResponse.compositePoLines[0].cost.quantityPhysical = 3
+    * set orderResponse.compositePoLines[0].locations[0].quantityPhysical = 3
+    * set orderResponse.workflowStatus = 'Open'
+
+  Given path 'orders/composite-orders', orderId
+    And request orderResponse
+    When method PUT
+    Then status 400
+    And match $.errors contains deep {code: 'locationCannotBeModifiedAfterOpen'}
+
 
   Scenario: delete poline
     Given path 'orders/order-lines', poLineId

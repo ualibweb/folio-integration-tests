@@ -159,8 +159,8 @@ Feature: close-order-one-loc-physics-and-manual-piece-false-and-some-piece-recie
     Then status 200
     * def items = $.items
     And match $.totalRecords == 2
-    * def item1 = items[0]
-    * def item2 = items[1]
+    * def item1 = karate.jsonPath(response, '$.items[*][?(@.status.name == "In process")]')[0]
+    * def item2 = karate.jsonPath(response, '$.items[*][?(@.status.name == "On order")]')[0]
     * def itemId1 = item1.id
     * def itemId2 = item2.id
     And match item1.effectiveLocation.id == "#(globalLocationsId)"

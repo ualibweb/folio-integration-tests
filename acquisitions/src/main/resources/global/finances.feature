@@ -100,7 +100,7 @@ Feature: global finances
       "fundId": "5e4fbdab-f1b1-4be8-9c33-d3c41ec9a696",
       "name": "Budget for API Tests",
       "fiscalYearId":"ac2164c7-ba3d-1bc2-a12c-e35ceccbfaf2",
-      "allocated": 9999999
+      "allocated": 99999999
     }
     """
     When method POST
@@ -133,7 +133,7 @@ Feature: global finances
       "fundId": "5e4fbdab-f1b1-4be8-9c33-d3c41ec9a698",
       "name": "Budget 2 for orders API Tests",
       "fiscalYearId":"ac2164c7-ba3d-1bc2-a12c-e35ceccbfaf2",
-      "allocated": 9999999
+      "allocated": 99999999
     }
     """
     When method POST

@@ -3,7 +3,7 @@ Feature: open-order-one-location-mixed-and-manual-piece-false-and-create-invento
   Background:
     * url baseUrl
     # uncomment below line for development
-    * callonce dev {tenant: 'test_orders'}
+    #* callonce dev {tenant: 'test_orders'}
     * callonce login testAdmin
     * def okapitokenAdmin = okapitoken
     * print okapitokenAdmin
