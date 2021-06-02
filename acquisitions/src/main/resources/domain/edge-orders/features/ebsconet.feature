@@ -27,7 +27,7 @@ Feature: Edge Orders Ebsconet
     And match $.status == "Success"
 
   Scenario: Create Purchase Order
-    * def orderLine = read('classpath:samples/mod-orders/orderLines/minimal-order-line.json')
+    * def orderLine = read('classpath:samples/mod-orders/orderLines/minimal-physical-order-line.json')
     * set orderLine.id = poLineId
     * set orderLine.poLineNumber = poLineNumber
     * set orderLine.purchaseOrderId = orderId

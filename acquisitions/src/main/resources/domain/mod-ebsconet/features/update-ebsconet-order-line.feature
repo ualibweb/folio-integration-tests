@@ -58,7 +58,7 @@ Feature: Update Ebsconet Order Line
     And match $ == { vendor: "testcode", unitPrice: 2.0, currency: "USD", poLineNumber: "#(poLineNumber)", quantity: 1, workflowStatus: "Pending" }
 
   Scenario: Create order with more information, get matching Ebsconet Line
-    * def orderLine = read('classpath:samples/mod-orders/orderLines/minimal-order-line.json')
+    * def orderLine = read('classpath:samples/mod-orders/orderLines/minimal-physical-order-line.json')
     * set orderLine.id = poLineId
     * set orderLine.purchaseOrderId = orderId
     * set orderLine.cancellationRestriction = false

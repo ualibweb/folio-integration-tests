@@ -35,7 +35,7 @@ Feature: UnOpen order and add addition POL and 1 Fund. Also verify encumbrances
     * def orderId = <orderId>
     * def poLineId = <orderLineId>
    Given path 'orders/order-lines'
-    * def orderLine = read('classpath:samples/mod-orders/orderLines/minimal-order-line.json')
+    * def orderLine = read('classpath:samples/mod-orders/orderLines/minimal-physical-order-line.json')
     * set orderLine.id = poLineId
     * set orderLine.purchaseOrderId = orderId
     And request orderLine
@@ -114,7 +114,7 @@ Feature: UnOpen order and add addition POL and 1 Fund. Also verify encumbrances
     * def poLineId = <unOpenOrderLineId>
     Given path 'orders/order-lines'
 
-    * def orderLine = read('classpath:samples/mod-orders/orderLines/minimal-order-line.json')
+    * def orderLine = read('classpath:samples/mod-orders/orderLines/minimal-physical-order-line.json')
     * set orderLine.id = poLineId
     * set orderLine.purchaseOrderId = orderId
 

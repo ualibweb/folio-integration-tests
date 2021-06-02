@@ -27,13 +27,7 @@ Feature: open-order-one-location-mixed-and-manual-piece-false-and-create-invento
 
     * configure retry = { count: 4, interval: 1000 }
 
- #    * def encumbrance1 = karate.jsonPath(response, "$.transactions[?(@.encumbrance.sourcePoLineId=='"+orderLineIdOne+"')]")[0]
-#    * def encumbrance2 = karate.jsonPath(response, "$.transactions[?(@.encumbrance.sourcePoLineId=='"+unOpenOrderLineId+"')]")[0]
-#    * def expenseClass1Totals = karate.jsonPath(response, "$.budgetExpenseClassTotals[*][?(@.expenseClassName == 'Print')]")
-#    * def expenseClass2Totals = karate.jsonPath(response, "$.budgetExpenseClassTotals[*][?(@.expenseClassName == 'Electronic')]")
-#    And match expenseClass1Totals[0] contains { "expended": 80.0, "percentageExpended": 40.0 }
-#    And match expenseClass2Totals[0] contains { "expended": 120.0, "percentageExpended": 60.0 }
-# And match each response.budgetExpenseClassTotals contains {"encumbered": 65.11, "awaitingPayment": 0.6, "expended": 0.00, "percentageExpended": "#notpresent"}
+
   Scenario: Create finances
     * call createFund { 'id': '#(fundId)'}
     * call createBudget { 'id': '#(budgetId)', 'allocated': 10000, 'fundId': '#(fundId)'}

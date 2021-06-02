@@ -141,13 +141,13 @@ Feature: open-order-one-location-physics-and-manual-piece-false-and-create-inven
     And match holdingsRecords[0] contains {"instanceId": "#(instanceId)", "permanentLocationId": "#(globalLocationsId)"}
     And match holdingsRecords[0].id == "#(poLineHoldingId)"
 
-#  Scenario: delete poline
-#    Given path 'orders/order-lines', poLineId
-#    When method DELETE
-#    Then status 204
-#
-#  Scenario: delete composite orders
-#    Given path 'orders/composite-orders', orderId
-#    When method DELETE
-#    Then status 204
+    Scenario: delete poline
+      Given path 'orders/order-lines', poLineId
+      When method DELETE
+      Then status 204
+
+    Scenario: delete composite orders
+      Given path 'orders/composite-orders', orderId
+      When method DELETE
+      Then status 204
 
