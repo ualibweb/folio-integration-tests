@@ -3,7 +3,7 @@ Feature: reopen-order-one-location-physics-and-manual-piece-false-and-create-inv
 
   Background:
     * url baseUrl
-    * callonce dev {tenant: 'test_orders'}
+    #* callonce dev {tenant: 'test_orders'}
     * callonce loginAdmin testAdmin
     * def okapitokenAdmin = okapitoken
     * callonce loginRegularUser testUser

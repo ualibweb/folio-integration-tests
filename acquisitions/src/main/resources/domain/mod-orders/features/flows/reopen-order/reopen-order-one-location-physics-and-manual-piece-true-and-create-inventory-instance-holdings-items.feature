@@ -1,9 +1,9 @@
 @parallel=false
-Feature: reopen-order-one-location-physics-and-manual-piece-false-and-create-inventory-instance.
+Feature: reopen-order-one-location-physics-and-manual-piece-true-and-create-inventory-instance-holdings-items.
 
   Background:
     * url baseUrl
-    #* callonce dev {tenant: 'test_orders'}
+    * callonce dev {tenant: 'test_orders'}
     * callonce loginAdmin testAdmin
     * def okapitokenAdmin = okapitoken
     * callonce loginRegularUser testUser
@@ -37,10 +37,10 @@ Feature: reopen-order-one-location-physics-and-manual-piece-false-and-create-inv
 
     * def orderLine = read('classpath:samples/mod-orders/orderLines/minimal-physical-order-line.json')
     * set orderLine.id = poLineId
+    * set orderLine.checkinItems = true
     * set orderLine.purchaseOrderId = orderId
     * set orderLine.cost.quantityPhysical = 2
     * set orderLine.locations[0] = { 'quantity': '2', 'locationId': '#(globalLocationsId)', 'quantityPhysical': '2'}
-    * set orderLine.physical.createInventory = 'Instance'
     And request orderLine
     When method POST
     Then status 201
@@ -96,7 +96,6 @@ Feature: reopen-order-one-location-physics-and-manual-piece-false-and-create-inv
 
   #Precondition :
     #Manual add pieces is FALSE - means we need to create pieces from code
-    #Create inventory is Instance - means don't create anything in the inventory
   Scenario: Check that instances, items, pieces, holdings were created
     * configure headers = headersAdmin
     Given path 'orders/order-lines', poLineId
@@ -105,9 +104,9 @@ Feature: reopen-order-one-location-physics-and-manual-piece-false-and-create-inv
     * def poLineResp = $
     * def instanceId = poLineResp.instanceId
     * def poLineNumber = poLineResp.poLineNumber
-    #If CreateInventory == None or Instance, then don't replace locationId with holdingId
-    * match poLineResp.locations[0].locationId == "#(globalLocationsId)"
-    * match poLineResp.locations[0] !contains { holdingId: '#notnull' }
+    * def poLineHoldingId = poLineResp.locations[0].holdingId
+    #If CreateInventory == Instance, Holding or Instance, Holding, Items, then replace locationId with holdingId
+    * match poLineResp.locations[0] !contains { locationId: '#notnull' }
 
     #Check that InstanceId and poLineId were copied into Title
     Given path 'orders-storage/titles'
@@ -132,28 +131,24 @@ Feature: reopen-order-one-location-physics-and-manual-piece-false-and-create-inv
     * def items = $.items
     And match $.totalRecords == 0
 
+
     Given path 'orders-storage/pieces'
     And param query = 'poLineId==' + poLineId
     When method GET
     Then status 200
     * def pieces = $.pieces
-    #Piece must contain link on poLine, title and doesn't contain link on item
-      # Piece without location, because Holding was not created and no storage space
-      # Quantity of the piece must be the same with poLine physical quantity
-    And match $.totalRecords == 2
-    * def piece1 = $.pieces[0]
-    * def piece2 = $.pieces[1]
-    #Piece after creation must be "Expected"
-    And match piece1 contains {"poLineId": "#(poLineId)", "titleId": "#(titleId)", "receivingStatus": "Expected"}
-    And match piece2 contains {"poLineId": "#(poLineId)", "titleId": "#(titleId)", "receivingStatus": "Expected"}
+    #Piece must contain link on location, poLine, title and item in inventory
+    #Quantity of the piece must be the same with poLine physical quantity
+    And match $.totalRecords == 0
 
-  #Holding must be created by unique pair : locationId and instanceId
+    #Holding must be created by unique pair : locationId and instanceId
     Given path 'holdings-storage/holdings'
     And param query = 'instanceId==' + instanceId
     When method GET
     Then status 200
     * def holdingsRecords = $.holdingsRecords
-    And match $.totalRecords == 0
+    And match $.totalRecords == 1
+    And match holdingsRecords[0] contains {"id": "#(poLineHoldingId)", "instanceId": "#(instanceId)", "permanentLocationId": "#(globalLocationsId)"}
 
   Scenario: delete poline
     Given path 'orders/order-lines', poLineId
@@ -164,3 +159,4 @@ Feature: reopen-order-one-location-physics-and-manual-piece-false-and-create-inv
     Given path 'orders/composite-orders', orderId
     When method DELETE
     Then status 204
+
