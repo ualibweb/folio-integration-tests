@@ -19,3 +19,6 @@ Feature: Reopen order flows
 
   Scenario: reopen-order-one-location-physics-and-manual-piece-true-and-create-inventory-instance-holdings-items
     Given call read('features/flows/reopen-order/reopen-order-one-location-physics-and-manual-piece-true-and-create-inventory-instance-holdings-items.feature')
+
+  Scenario: check-encumbrances-after-order-is-reopened
+    Given call read('features/flows/reopen-order/check-encumbrances-after-order-is-reopened.feature')

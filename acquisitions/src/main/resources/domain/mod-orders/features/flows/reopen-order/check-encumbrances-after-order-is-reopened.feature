@@ -246,6 +246,7 @@ Feature: Check encumbrances after order is reopened
     And match $.workflowStatus == 'Closed'
 
     * def orderResponse = $
+    * remove orderResponse.compositePoLines
     * set orderResponse.workflowStatus = 'Open'
 
     Given path 'orders/composite-orders', orderId
@@ -356,6 +357,7 @@ Feature: Check encumbrances after order is reopened
     And match $.workflowStatus == 'Closed'
 
     * def orderResponse = $
+    * remove orderResponse.compositePoLines
     * set orderResponse.workflowStatus = 'Open'
 
     Given path 'orders/composite-orders', orderId
