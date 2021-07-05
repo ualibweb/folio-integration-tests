@@ -107,5 +107,8 @@ Feature: mod-orders integration tests
   Scenario: Reopen order flows verification
     Given call read('features/flows/reopen-order/reopen-order.feature')
 
+  Scenario: Check GET holding summary API
+    Given call read('features/check-holding-summaries.feature')
+
   Scenario: wipe data
     Given call read('classpath:common/destroy-data.feature')
