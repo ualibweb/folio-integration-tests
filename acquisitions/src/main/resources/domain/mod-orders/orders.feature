@@ -22,18 +22,20 @@ Feature: mod-orders integration tests
       | name |
 
     * table userPermissions
-      | name         |
+      | name                 |
       | 'finance.all'        |
       | 'invoice.all'        |
       | 'orders.all'         |
+      | 'orders.item.approve'|
       | 'orders.item.reopen' |
+      | 'orders.item.unopen' |
 
-    * def desiredPermissions =
-          """
-            [
-            { "name": "orders.item.reopen" }
-            ]
-          """
+    * table desiredPermissions
+      | name                  |
+      | 'orders.item.approve' |
+      | 'orders.item.unopen'  |
+      | 'orders.item.reopen'  |
+
 
   Scenario: create tenant and users for testing
     Given call read('classpath:common/setup-users.feature')
@@ -107,8 +109,11 @@ Feature: mod-orders integration tests
   Scenario: Reopen order flows verification
     Given call read('features/flows/reopen-order/reopen-order.feature')
 
-  Scenario: Check GET holding summary API
-    Given call read('features/check-holding-summaries.feature')
+  Scenario: Unopen order flows verification
+    Given call read('features/flows/unopen-order/unopen-order.feature')
+
+#  Scenario: Check GET holding summary API
+#    Given call read('features/check-holding-summaries.feature')
 
   Scenario: wipe data
     Given call read('classpath:common/destroy-data.feature')

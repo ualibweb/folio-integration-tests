@@ -22,12 +22,11 @@ Feature: mod-orders integration tests
       | 'orders.all'         |
       | 'orders.item.reopen' |
 
-    * def desiredPermissions =
-          """
-            [
-            { "name": "orders.item.reopen" }
-            ]
-          """
+    * table desiredPermissions
+      | name                  |
+      | 'orders.item.approve' |
+      | 'orders.item.unopen'  |
+      | 'orders.item.reopen'  |
 
   Scenario: create tenant and users for testing
     Given call read('classpath:common/setup-users.feature')

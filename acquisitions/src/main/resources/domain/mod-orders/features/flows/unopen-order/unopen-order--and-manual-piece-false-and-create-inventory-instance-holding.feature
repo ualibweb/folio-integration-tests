@@ -3,7 +3,7 @@ Feature: UnOpen order with one line and check that pieces, holdings were deleted
   Background:
     * url baseUrl
     # uncomment below line for development
-    * callonce dev {tenant: 'test_orders1'}
+    #* callonce dev {tenant: 'test_orders1'}
     * callonce loginAdmin testAdmin
     * def okapitokenAdmin = okapitoken
 

@@ -3,7 +3,7 @@ Feature: reopen-order-one-loc-physics-and-manual-piece-false-and-some-piece-reci
   Background:
     * url baseUrl
     # uncomment below line for development
-    * callonce dev {tenant: 'test_orders1'}
+    #* callonce dev {tenant: 'test_orders1'}
     * callonce login testAdmin
     * def okapitokenAdmin = okapitoken
     * print okapitokenAdmin
