@@ -7,12 +7,12 @@ Feature: mod-orders integration tests
       | 'mod-configuration'  |
       | 'mod-login'          |
       | 'mod-orders'         |
-      | 'mod-orders-storage' |
       | 'mod-permissions'    |
       | 'mod-tags'           |
 
     * def random = callonce randomMillis
     * def testTenant = 'test_orders' + random
+    #* def testTenant = 'test_orders'
     * def testAdmin = {tenant: '#(testTenant)', name: 'test-admin', password: 'admin'}
     * def testUser = {tenant: '#(testTenant)', name: 'test-user', password: 'test'}
 
@@ -21,9 +21,21 @@ Feature: mod-orders integration tests
 
     * table userPermissions
       | name                                   |
-      | 'orders.all'                           |
+      | 'finance.all'        |
+      | 'invoice.all'        |
+      | 'orders.all'         |
       | 'orders-storage.pieces.collection.get' |
       | 'orders-storage.pieces.item.get'       |
+      | 'orders.item.approve'|
+      | 'orders.item.reopen' |
+      | 'orders.item.unopen' |
+
+    * table desiredPermissions
+      | name                  |
+      | 'orders.item.approve' |
+      | 'orders.item.unopen'  |
+      | 'orders.item.reopen'  |
+
 
   Scenario: create tenant and users for testing
     Given call read('classpath:common/setup-users.feature')
@@ -92,6 +104,21 @@ Feature: mod-orders integration tests
 
   Scenario: Receive piece against package POL
     Given call read('features/receive-piece-against-package-pol.feature')
+#  Scenario: Open order flows verification
+#    Given call read('features/flows/open-order/open-order.feature')
+#
+#  Scenario: Close order flows verification
+#    Given call read('features/flows/close-order/close-order.feature')
+
+  Scenario: Reopen order flows verification
+    Given call read('features/flows/reopen-order/reopen-order.feature')
+
+  Scenario: Unopen order flows verification
+    Given call read('features/flows/unopen-order/unopen-order.feature')
+
+#  Scenario: Check GET holding summary API
+#    Given call read('features/check-holding-summaries.feature')
+
 
   Scenario: wipe data
     Given call read('classpath:common/destroy-data.feature')
