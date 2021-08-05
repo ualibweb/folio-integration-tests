@@ -1,14 +1,14 @@
-Feature: Check creation of pieces, item , holdings for POL, when only locations change and quantity stay not change.
+Feature: Check that after unopen order we can decrease quantity and in open order time error will be returned.
 
   Background:
     * url baseUrl
     # uncomment below line for development
-    # * callonce dev {tenant: 'test_orders1'}
-    * callonce login testAdmin
+    * callonce dev {tenant: 'test_orders3'}
+    * callonce loginAdmin testAdmin
     * def okapitokenAdmin = okapitoken
     * print okapitokenAdmin
 
-    * callonce login testUser
+    * callonce loginRegularUser testUser
     * def okapitokenUser = okapitoken
 
     * def headersUser = { 'Content-Type': 'application/json', 'x-okapi-token': '#(okapitokenUser)', 'Accept': 'application/json'  }
@@ -22,7 +22,15 @@ Feature: Check creation of pieces, item , holdings for POL, when only locations 
     * def orderId = callonce uuid1
     * def poLineId = callonce uuid2
 
+    * def fundId = callonce uuid3
+    * def budgetId = callonce uuid4
+
     * configure retry = { count: 4, interval: 1000 }
+
+  Scenario: Create finances
+    * configure headers = headersAdmin
+    * call createFund { 'id': '#(fundId)'}
+    * call createBudget { 'id': '#(budgetId)', 'allocated': 10000, 'fundId': '#(fundId)'}
 
   Scenario: Create One-time order
     Given path 'orders/composite-orders'
@@ -40,12 +48,12 @@ Feature: Check creation of pieces, item , holdings for POL, when only locations 
   Scenario: Create order line
     Given path 'orders/order-lines'
 
-    * def orderLine = read('classpath:samples/mod-orders/orderLines/minimal-mixed-order-line.json')
+    * def orderLine = read('classpath:samples/mod-orders/orderLines/minimal-order-line.json')
     * set orderLine.id = poLineId
     * set orderLine.purchaseOrderId = orderId
-    * set orderLine.cost.quantityPhysical = '2'
-    * set orderLine.cost.quantityElectronic = '2'
-    * set orderLine.locations[1] = { 'quantity': '2', 'locationId': '#(globalLocationsId2)', 'quantityPhysical': '1', 'quantityElectronic': '1'}
+    * set orderLine.cost.quantityPhysical = 2
+    * set orderLine.locations[0].quantityPhysical = 2
+    * set orderLine.locations[0].quantity = 2
     And request orderLine
     When method POST
     Then status 201
@@ -57,6 +65,7 @@ Feature: Check creation of pieces, item , holdings for POL, when only locations 
 
     * def orderResponse = $
     * set orderResponse.workflowStatus = "Open"
+    * set orderResponse.compositePoLines[*].fundDistribution[*].fundId = fundId
 
     Given path 'orders/composite-orders', orderId
     And request orderResponse
@@ -64,13 +73,14 @@ Feature: Check creation of pieces, item , holdings for POL, when only locations 
     Then status 204
 
   Scenario: Retrieve order line items before update location
+    * configure headers = headersAdmin
     Given path 'inventory/items'
     And param query = 'purchaseOrderLineIdentifier==' + poLineId
     When method GET
     Then status 200
     * def items = $.items
-    And match $.totalRecords == 4
-    And match items[*].effectiveLocation.id contains ["#(globalLocationsId)", "#(globalLocationsId2)"]
+    And match $.totalRecords == 2
+    And match items[*].effectiveLocation.id == ["#(globalLocationsId)", "#(globalLocationsId)"]
 
 
   Scenario: Retrieve order line pieces before update location
@@ -79,39 +89,50 @@ Feature: Check creation of pieces, item , holdings for POL, when only locations 
     When method GET
     Then status 200
     * def pieces = $.pieces
-    And match $.totalRecords == 4
-    And match pieces[*].locationId contains ["#(globalLocationsId)", "#(globalLocationsId2)"]
+    And match $.totalRecords == 2
+    And match pieces[*].locationId == ["#(globalLocationsId)", "#(globalLocationsId)"]
 
-  Scenario: Get poLine and update order line location
+  Scenario: UnOpen order
+    Given path 'orders/composite-orders', orderId
+    When method GET
+    Then status 200
+
+    * def orderResponse = $
+    * set orderResponse.workflowStatus = "Pending"
+
+    Given path 'orders/composite-orders', orderId
+    And request orderResponse
+    And header X-Okapi-Permissions = 'orders.item.unopen'
+    When method PUT
+    Then status 204
+
+  Scenario: Get poLine and decrease order line physical quantity
     Given path 'orders/order-lines', poLineId
     When method GET
     Then status 200
 
     * def poLineResponse = $
-    * set poLineResponse.locations[0].locationId = globalLocationsId3
+    * set poLineResponse.cost.quantityPhysical = 1
+    * set poLineResponse.locations[0].quantityPhysical = 1
+    * set poLineResponse.locations[0].quantity = 1
 
     Given path 'orders/order-lines', poLineId
     And request poLineResponse
     When method PUT
     Then status 204
 
-  Scenario: Retrieve order line items after update location
-    Given path 'inventory/items'
-    And param query = 'purchaseOrderLineIdentifier==' + poLineId
+  Scenario: Open order after unopen
+    Given path 'orders/composite-orders', orderId
     When method GET
     Then status 200
-    * def items = $.items
-    And match $.totalRecords == 4
-    And match items[*].effectiveLocation.id contains ["#(globalLocationsId2)", "#(globalLocationsId3)"]
 
-  Scenario: Retrieve order line pieces after update location
-    Given path 'orders-storage/pieces'
-    And param query = 'poLineId==' + poLineId
-    When method GET
-    Then status 200
-    * def pieces = $.pieces
-    And match $.totalRecords == 4
-    And match pieces[*].locationId contains ["#(globalLocationsId2)", "#(globalLocationsId3)"]
+    * def orderResponse = $
+    * set orderResponse.workflowStatus = "Open"
+
+    Given path 'orders/composite-orders', orderId
+    And request orderResponse
+    When method PUT
+    Then status 422
 
   Scenario: delete poline
     Given path 'orders/order-lines', poLineId
