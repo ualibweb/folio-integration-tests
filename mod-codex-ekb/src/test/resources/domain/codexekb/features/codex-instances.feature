@@ -6,33 +6,40 @@ Feature: Test codex instances
     * callonce login testUser
     * def okapiUserToken = okapitoken
 
-    * def headersUser = { 'Content-Type': 'application/json', 'x-okapi-token': '#(okapiUserToken)', 'Accept': 'application/json' }
+    * def headersUser = { 'Content-Type': 'application/json', 'x-okapi-token': '#(okapiUserToken)', 'Accept': '*/*' }
     * configure headers = headersUser
 
-  @Undefined
   Scenario: Test GET codex-instances
-    * print 'undefined'
+    Given path 'codex-instances'
+    When method GET
+    Then status 200
 
-  @Undefined
-  Scenario: Test GET codex-instances should return 400 if malformed query parameter
-    * print 'undefined'
-
-  @Undefined
-  Scenario: Test GET codex-instances should return 422 if validation error
-    * print 'undefined'
-
-  @Undefined
-  Scenario: Test GET codex-instance by id
-    * print 'undefined'
-
-  @Undefined
-  Scenario: Test GET codex-instance by id should return 404 if item with given id not found
-    * print 'undefined'
-
-  @Undefined
-  Scenario: Test GET codex-instances-sources
-    * print 'undefined'
-
-  @Undefined
-  Scenario: Test GET codex-instances-sources should return 400 if malformed query parameter
-    * print 'undefined'
+#  Scenario: Test GET codex-instances should return 400 if malformed query parameter
+#    Given path 'codex-instances'
+#    When method GET
+#    Then status 400
+#
+#  Scenario: Test GET codex-instances should return 422 if validation error
+#    Given path 'codex-instances'
+#    When method GET
+#    Then status 422
+#
+#  Scenario: Test GET codex-instance by id
+#    Given path 'codex-instances/1'
+#    When method GET
+#    Then status 200
+#
+#  Scenario: Test GET codex-instance by id should return 404 if item with given id not found
+#    Given path 'codex-instances/1'
+#    When method GET
+#    Then status 404
+#
+#  Scenario: Test GET codex-instances-sources
+#    Given path 'codex-instances-sources'
+#    When method GET
+#    Then status 200
+#
+#  Scenario: Test GET codex-instances-sources should return 400 if malformed query parameter
+#    Given path 'codex-instances-sources'
+#    When method GET
+#    Then status 400
