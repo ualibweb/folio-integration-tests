@@ -71,6 +71,15 @@ function fn() {
       name: 'diku_admin',
       password: 'admin'
     }
+  } else if (env == 'scratch') {
+    config.baseUrl = 'https://core-platform-okapi.ci.folio.org:443';
+    config.edgeUrl = 'https://folio-snapshot.dev.folio.org:8000';
+    config.apikey = 'eyJzIjoiY2FpYVNvZnRDbGllbnQiLCJ0IjoiZGlrdSIsInUiOiJjYWlhU29mdENsaWVudCJ9';
+    config.admin = {
+      tenant: 'supertenant',
+      name: 'testing_admin',
+      password: 'admin'
+    }
   } else if (env != null && env.match(/^ec2-\d+/)) {
     // Config for FOLIO CI "folio-integration" public ec2- dns name, the testing endpoint is used via user creation approach of caiasoft user
     config.baseUrl = 'https://folio-testing-okapi.dev.folio.org:443';

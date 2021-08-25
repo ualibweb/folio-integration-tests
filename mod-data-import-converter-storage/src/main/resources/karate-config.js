@@ -67,6 +67,13 @@ function configuration() {
       name: 'testing_admin',
       password: 'admin'
     }
+  } else if (env == 'scratch') {
+    config.baseUrl = 'https://core-platform-okapi.ci.folio.org:443';
+    config.admin = {
+      tenant: 'supertenant',
+      name: 'testing_admin',
+      password: 'admin'
+    }
   } else if (env != null && env.match(/^ec2-\d+/)) {
     // Config for FOLIO CI "folio-integration" public ec2- dns name
     config.baseUrl = 'http://' + env + ':9130';

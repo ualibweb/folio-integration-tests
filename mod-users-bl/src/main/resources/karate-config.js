@@ -93,6 +93,13 @@ function fn() {
       name: 'admin',
       password: 'admin'
     }
+  } else if (env == 'scratch') {
+    config.baseUrl = 'https://core-platform-okapi.ci.folio.org:443';
+    config.admin = {
+      tenant: 'supertenant',
+      name: 'testing_admin',
+      password: 'admin'
+    }
   } else if (env == 'localhost') {
    // Running tests against the testing backend vagrant box requires these credentials.
    config.baseUrl = 'http://localhost:9130';
