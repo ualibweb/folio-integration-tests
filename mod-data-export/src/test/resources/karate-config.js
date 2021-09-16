@@ -54,9 +54,10 @@ function fn() {
     config.admin = {tenant: 'supertenant', name: 'testing_admin', password: 'admin'};
     config.edgeHost = 'https://folio-snapshot.dev.folio.org:8000';
     config.edgeApiKey = 'eyJzIjoiNXNlNGdnbXk1TiIsInQiOiJkaWt1IiwidSI6ImRpa3UifQ==';
-  }
-  else if (env == 'snapshot') {
-    config.baseUrl = 'https://folio-snapshot-okapi.dev.folio.org:443';
+  } else if (env == 'scratch') {
+    config.baseUrl = 'https://core-platform-okapi.ci.folio.org:443';
+    config.edgeHost = 'https://folio-snapshot.dev.folio.org:8000';
+    config.edgeApiKey = 'eyJzIjoiNXNlNGdnbXk1TiIsInQiOiJkaWt1IiwidSI6ImRpa3UifQ==';
     config.admin = {
       tenant: 'supertenant',
       name: 'testing_admin',

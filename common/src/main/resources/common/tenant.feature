@@ -3,7 +3,8 @@ Feature: Tenants
   Background:
     * url baseUrl
     * configure retry = { count: 2, interval: 5000 }
-
+    * configure readTimeout = 600000
+    
   @create
   Scenario: createTenant
     Given path '_/proxy/tenants'
