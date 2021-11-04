@@ -26,6 +26,7 @@ Feature: mod-circulation integration tests
       | 'circulation-storage.circulation-rules.put'                    |
       | 'circulation-storage.loan-policies.item.post'                  |
       | 'circulation-storage.patron-notice-policies.item.post'         |
+      | 'circulation.loans.declare-item-lost.post'                     |
       | 'overdue-fines-policies.item.post'                             |
       | 'lost-item-fees-policies.item.post'                            |
       | 'manualblocks.collection.get'                                  |
@@ -55,6 +56,10 @@ Feature: mod-circulation integration tests
       | 'inventory.items.item.post'                                    |
       | 'users.item.post'                                              |
       | 'usergroups.item.post'                                         |
+      | 'owners.item.post'                                             |
+      | 'patron-block-conditions.item.put'                             |
+      | 'patron-block-limits.item.post'                                |
+      | 'accounts.collection.get'                                      |
 
   Scenario: create tenant and users for testing
     Given call read('classpath:common/setup-users.feature')
