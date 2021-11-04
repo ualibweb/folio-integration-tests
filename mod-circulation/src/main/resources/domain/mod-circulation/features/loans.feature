@@ -189,13 +189,14 @@ Feature: Loans tests
 
        # post patron blocks limit for max number of lost items as 0 pcs
   # post https://folio-snapshot-load-okapi.dev.folio.org/patron-block-limits
+    * def blockLimitsId = call uuid1
     * def blockLimitsRequest =
     """
   {
 	"patronGroupId": "#(groupId)",
 	"conditionId": "#(conditionId)",
 	"value": 0,
-	"id": "09305aed-a946-408b-a89f-a64348a38252"
+	"id": "#(blockLimitsId)"
 }
   """
     Given path 'patron-block-limits'
@@ -204,32 +205,28 @@ Feature: Loans tests
     Then status 201
 
         # checkOut an item
-    * call read('classpath:domain/mod-circulation/features/util/initData.feature@PostCheckOut') { extCheckOutUserBarcode: '77771', extCheckOutItemBarcode: '555500' }
+    * def checkOutResult = call read('classpath:domain/mod-circulation/features/util/initData.feature@PostCheckOut') { extCheckOutUserBarcode: '77771', extCheckOutItemBarcode: '555500' }
+    * def loanId = checkOutResult.response.id
+    * def declaredLostDateTime = call read('classpath:domain/mod-circulation/features/util/get-time-now-function.js')
 
-     # get loan
+    Given path 'automated-patron-blocks', userId
+    When method GET
+    Then status 200
+    * print 'automated-patron-blocks before', response
+
+            # change borrowed item status to lost
+    * call read('classpath:domain/mod-circulation/features/util/initData.feature@DeclareItemLost') { servicePointId: #(servicePointId), loanId: #(loanId), declaredLostDateTime:#(declaredLostDateTime) }
+
     Given path 'circulation', 'loans'
     And param query = '(userId==' + userId + ' and ' + 'itemId==' + itemId1 + ')'
     When method GET
     Then status 200
-    * def currentLoanId = response.loans[0].id
+    * print 'loan', response
 
-
-        # change borrowed item status to lost
-  # post https://folio-snapshot-load-okapi.dev.folio.org/circulation/loans/7975dcb6-ef79-47ae-8f53-58aabf035a01/declare-item-lost
-    # loanId==7975dcb6-ef79-47ae-8f53-58aabf035a01
-    * def declareItemLostRequest =
-    """
-  {
-	"comment": "was lost",
-	"servicePointId": "#(servicePointId)",
-	"declaredLostDateTime": "2021-11-04T09:48:31.000Z",
-	"id": "6a4b6787-5515-4917-8eaa-44dd788e35a2"
-}
-  """
-    Given path 'circulation', 'loans', currentLoanId, 'declare-item-lost',
-    And request declareItemLostRequest
-    When method POST
-    Then status 204
+    Given path 'automated-patron-blocks', userId
+    When method GET
+    Then status 200
+    * print 'automated-patron-blocks after', response
 
         # checkOut next item to exceed max number of lost items and generate error message
     * def checkOutByBarcodeEntityRequest = read('samples/check-out-by-barcode-entity-request.json')
