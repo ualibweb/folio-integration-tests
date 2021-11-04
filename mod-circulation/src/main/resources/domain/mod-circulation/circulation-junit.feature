@@ -30,6 +30,7 @@ Feature: mod-circulation integration tests
       | 'circulation-storage.loans.item.get'                           |
       | 'circulation-storage.patron-notice-policies.item.post'         |
       | 'circulation.loans.declare-item-lost.post'                     |
+      | 'circulation.requests.item.post'                               |
       | 'overdue-fines-policies.item.post'                             |
       | 'lost-item-fees-policies.item.post'                            |
       | 'manualblocks.collection.get'                                  |
