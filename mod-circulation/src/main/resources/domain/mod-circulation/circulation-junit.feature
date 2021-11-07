@@ -66,6 +66,10 @@ Feature: mod-circulation integration tests
       | 'patron-block-conditions.item.put'                             |
       | 'patron-block-limits.item.post'                                |
       | 'accounts.collection.get'                                      |
+      | 'patron-block-conditions.collection.get'                       |
+      | 'patron-block-limits.item.put'                                 |
+      | 'patron-block-limits.item.get'                                 |
+
 
   Scenario: create tenant and users for testing
     Given call read('classpath:common/setup-users.feature')

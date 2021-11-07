@@ -278,8 +278,10 @@ Feature: init data for mod-circulation
   @PostCheckOut
   Scenario: do check out
     * def checkOutByBarcodeEntityRequest = read('samples/check-out-by-barcode-entity-request.json')
+    * def checkOutDateTime = call read('classpath:domain/mod-circulation/features/util/get-time-now-function.js')
     * checkOutByBarcodeEntityRequest.userBarcode = extCheckOutUserBarcode
     * checkOutByBarcodeEntityRequest.itemBarcode = extCheckOutItemBarcode
+    * checkOutByBarcodeEntityRequest.loanDate = checkOutDateTime
     Given path 'circulation', 'check-out-by-barcode'
     And request checkOutByBarcodeEntityRequest
     When method POST
@@ -308,4 +310,24 @@ Feature: init data for mod-circulation
     And request declareItemLostRequest
     When method POST
     Then status 204
-    
+
+  @PutBlockConditions
+  Scenario: set patron block conditions
+    * def blockConditionsRequest = read('classpath:domain/mod-circulation/features/samples/block/patron-block-conditions-request.json')
+    * blockConditionsRequest.id = conditionId
+    * blockConditionsRequest.message = conditionsMessage
+    Given path 'patron-block-conditions', conditionId
+    And request blockConditionsRequest
+    When method PUT
+    Then status 204
+
+  @PostBlockLimits
+  Scenario: post patron block limits
+    * def blockLimitsId = call uuid1
+    * def blockLimitsRequest = read('classpath:domain/mod-circulation/features/samples/block/patron-block-limits-request.json')
+    * blockLimitsRequest.conditionId = conditionId
+    * blockLimitsRequest.value = limitsValue
+    Given path 'patron-block-limits'
+    And request blockLimitsRequest
+    When method POST
+    Then status 201

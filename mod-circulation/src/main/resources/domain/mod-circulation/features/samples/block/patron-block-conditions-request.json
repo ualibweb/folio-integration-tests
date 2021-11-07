@@ -1,0 +1,9 @@
+{
+  "id": "",
+  "name": "Maximum number of lost items",
+  "blockBorrowing": true,
+  "blockRenewals": false,
+  "blockRequests": false,
+  "valueType": "Integer",
+  "message": ""
+}

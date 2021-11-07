@@ -147,14 +147,13 @@ Feature: Loans tests
     * def requestPolicyId = call uuid1
     * def extUserId = call uuid1
     * def extUserId2 = call uuid1
-    * def expectedLoanDate = '2021-10-27T13:25'
-    * def expectedDueDateBeforeRequest = '2021-11-17T13:25'
+    * def itemId = call uuid1
 
     * call read('classpath:domain/mod-circulation/features/util/initData.feature@PostInstance') { extInstanceTypeId: #(extInstanceTypeId) }
     * call read('classpath:domain/mod-circulation/features/util/initData.feature@PostServicePoint')
     * call read('classpath:domain/mod-circulation/features/util/initData.feature@PostLocation') { extInstitutionId: #(extInstitutionId), extCampusId: #(extCampusId), extLibraryId: #(extLibraryId) }
     * call read('classpath:domain/mod-circulation/features/util/initData.feature@PostHoldings')
-    * call read('classpath:domain/mod-circulation/features/util/initData.feature@PostItem') { extItemBarcode: '333333', extMaterialTypeId: #(materialTypeId) }
+    * call read('classpath:domain/mod-circulation/features/util/initData.feature@PostItem') { extItemBarcode: '333333', extMaterialTypeId: #(materialTypeId), extItemId: #(itemId) }
     * call read('classpath:domain/mod-circulation/features/util/initData.feature@PostGroup')
     * call read('classpath:domain/mod-circulation/features/util/initData.feature@PostUser') { extUserId: #(extUserId), extUserBarcode: '44441' }
     * call read('classpath:domain/mod-circulation/features/util/initData.feature@PostUser') { extUserId: #(extUserId2), extUserBarcode: '44442' }
@@ -169,7 +168,9 @@ Feature: Loans tests
     * call read('classpath:domain/mod-circulation/features/util/initData.feature@PostRulesWithMaterialType') { extLoanPolicyId: #(loanPolicyId), extLostItemFeePolicyId: #(lostItemFeePolicyId), extOverdueFinePoliciesId: #(overdueFinePoliciesId), extPatronPolicyId: #(patronPolicyId), extRequestPolicyId: #(requestPolicyId), extMaterialTypeId: #(materialTypeId), extLoanPolicyMaterialId: #(recallReturnIntervalLoanPolicyId), extOverdueFinePoliciesMaterialId: #(overdueFinePoliciesId), extLostItemFeePolicyMaterialId: #(lostItemFeePolicyId), extRequestPolicyMaterialId: #(requestPolicyId), extPatronPolicyMaterialId: #(patronPolicyId) }
 
     # checkOut an item
-    * call read('classpath:domain/mod-circulation/features/util/initData.feature@PostCheckOut') { extCheckOutUserBarcode: '44441', extCheckOutItemBarcode: '333333' }
+    * def checkOutResult = call read('classpath:domain/mod-circulation/features/util/initData.feature@PostCheckOut') { extCheckOutUserBarcode: '44441', extCheckOutItemBarcode: '333333' }
+    * def loanDate = checkOutResult.response.loanDate
+    * def dueDateBeforeRequest = checkOutResult.response.dueDate
 
     # check loan and dueDateChangedByRecall availability
     Given path 'circulation', 'loans'
@@ -179,8 +180,8 @@ Feature: Loans tests
     * def loanResponse = response.loans[0]
     Then match loanResponse.dueDateChangedByRecall == '#notpresent'
     Then match loanResponse.loanPolicyId == recallReturnIntervalLoanPolicyId
-    Then match loanResponse.loanDate contains expectedLoanDate
-    Then match loanResponse.dueDate contains expectedDueDateBeforeRequest
+    Then match loanResponse.loanDate == loanDate
+    Then match loanResponse.dueDate == dueDateBeforeRequest
 
     # post recall request by patron-requester
     * def requestEntityRequest = read('classpath:domain/mod-circulation/features/samples/request-entity-request.json')
@@ -196,9 +197,9 @@ Feature: Loans tests
     When method GET
     Then status 200
     Then match $.loans[0].dueDateChangedByRecall == true
-    And match $.loans[0].dueDate !contains expectedDueDateBeforeRequest
+    And match $.loans[0].dueDate != dueDateBeforeRequest
 
-  Scenario: Post items, post patron, checkOut items, declare one as lost and checkOut additional item to exceed limit
+  Scenario: Post items, post patron, checkOut items, declare items as lost to exceed block limits
 
     * def extInstanceTypeId = call uuid1
     * def extInstitutionId = call uuid1
@@ -206,6 +207,9 @@ Feature: Loans tests
     * def extLibraryId = call uuid1
     * def itemId1 = call uuid1
     * def itemId2 = call uuid1
+    * def conditionId = '72b67965-5b73-4840-bc0b-be8f3f6e047e'
+    * def conditionsMessage = 'You already lost an item!'
+    * def sleep = function(millis){ java.lang.Thread.sleep(millis) }
 
     # post two items
     * call read('classpath:domain/mod-circulation/features/util/initData.feature@PostInstance') { extInstanceTypeId: #(extInstanceTypeId) }
@@ -216,94 +220,56 @@ Feature: Loans tests
     * call read('classpath:domain/mod-circulation/features/util/initData.feature@PostItem') { extItemBarcode: '555501', extItemId: #(itemId2) }
     * call read('classpath:domain/mod-circulation/features/util/initData.feature@PostPolicies')
     * call read('classpath:domain/mod-circulation/features/util/initData.feature@PostGroup')
-    * call read('classpath:domain/mod-circulation/features/util/initData.feature@PostUser') { extUserBarcode: '77771' }
+    * call read('classpath:domain/mod-circulation/features/util/initData.feature@PostUser') { extUserBarcode: userBarcode, extUserId: #(userId) }
 
-        # post owner associated with service point
-    * def ownerEntityRequest =
-    """
-    {
-  "owner": "Main Circ",
-  "desc": "Main Library Circulation Desk",
-  "servicePointOwner": [{
-    "value": "#(servicePointId)",
-    "label": "Main Lib Circ Desk"
-  }]
-}
-    """
-    Given path 'owners'
-    And request ownerEntityRequest
-    When method POST
-    Then status 201
+    # post owner associated with service point
+    * call read('classpath:domain/mod-circulation/features/util/initData.feature@PostOwner')
 
-       # post patron blocks condition for max number of lost items
-  # put https://folio-snapshot-load-okapi.dev.folio.org/patron-block-conditions/72b67965-5b73-4840-bc0b-be8f3f6e047e
+    # post patron blocks condition for max number of lost items
+    * call read('classpath:domain/mod-circulation/features/util/initData.feature@PutBlockConditions') { conditionId: #(conditionId), conditionsMessage: #(conditionsMessage) }
 
-    * def conditionId = '72b67965-5b73-4840-bc0b-be8f3f6e047e'
-    * def blockConditionsRequest =
-    """
-  {
-	"id": "#(conditionId)",
-	"name": "Maximum number of lost items",
-	"blockBorrowing": true,
-	"blockRenewals": false,
-	"blockRequests": false,
-	"valueType": "Integer",
-	"message": "You already lost an item!"
-}
-  """
-    Given path 'patron-block-conditions', conditionId
-    And request blockConditionsRequest
-    When method PUT
-    Then status 204
+    # post patron blocks limit for max number of lost items as 1 pcs
+    * call read('classpath:domain/mod-circulation/features/util/initData.feature@PostBlockLimits') { conditionId: #(conditionId), limitsValue: 1 }
 
-       # post patron blocks limit for max number of lost items as 0 pcs
-  # post https://folio-snapshot-load-okapi.dev.folio.org/patron-block-limits
-    * def blockLimitsId = call uuid1
-    * def blockLimitsRequest =
-    """
-  {
-	"patronGroupId": "#(groupId)",
-	"conditionId": "#(conditionId)",
-	"value": 0,
-	"id": "#(blockLimitsId)"
-}
-  """
-    Given path 'patron-block-limits'
-    And request blockLimitsRequest
-    When method POST
-    Then status 201
-
-        # checkOut an item
-    * def checkOutResult = call read('classpath:domain/mod-circulation/features/util/initData.feature@PostCheckOut') { extCheckOutUserBarcode: '77771', extCheckOutItemBarcode: '555500' }
+    # checkOut the first item
+    * def checkOutResult = call read('classpath:domain/mod-circulation/features/util/initData.feature@PostCheckOut') { extCheckOutUserBarcode: userBarcode, extCheckOutItemBarcode: '555500' }
     * def loanId = checkOutResult.response.id
     * def declaredLostDateTime = call read('classpath:domain/mod-circulation/features/util/get-time-now-function.js')
 
-    Given path 'automated-patron-blocks', userId
-    When method GET
-    Then status 200
-    * print 'automated-patron-blocks before', response
-
-            # change borrowed item status to lost
+    # change the first borrowed item status to lost
     * call read('classpath:domain/mod-circulation/features/util/initData.feature@DeclareItemLost') { servicePointId: #(servicePointId), loanId: #(loanId), declaredLostDateTime:#(declaredLostDateTime) }
 
-    Given path 'circulation', 'loans'
-    And param query = '(userId==' + userId + ' and ' + 'itemId==' + itemId1 + ')'
-    When method GET
-    Then status 200
-    * print 'loan', response
-
+    # assert patron blocks properties are not available
     Given path 'automated-patron-blocks', userId
     When method GET
     Then status 200
-    * print 'automated-patron-blocks after', response
+    And match response.automatedPatronBlocks[0] == '#notpresent'
 
-        # checkOut next item to exceed max number of lost items and generate error message
-    * def checkOutByBarcodeEntityRequest = read('samples/check-out-by-barcode-entity-request.json')
-    * checkOutByBarcodeEntityRequest.userBarcode = '77771'
-    * checkOutByBarcodeEntityRequest.itemBarcode = '555501'
-    Given path 'circulation', 'check-out-by-barcode'
-    And request checkOutByBarcodeEntityRequest
-    When method POST
-    Then status 422
-    And match response.message == 'You already lost an item!!!'
+    # checkOut the second item
+    * def checkOutResult = call read('classpath:domain/mod-circulation/features/util/initData.feature@PostCheckOut') { extCheckOutUserBarcode: userBarcode, extCheckOutItemBarcode: '555501' }
+    * def loanId = checkOutResult.response.id
+    * def declaredLostDateTime = call read('classpath:domain/mod-circulation/features/util/get-time-now-function.js')
 
+    # change the second borrowed item status to lost to exceed max number of lost items limit
+    * call read('classpath:domain/mod-circulation/features/util/initData.feature@DeclareItemLost') { servicePointId: #(servicePointId), loanId: #(loanId), declaredLostDateTime:#(declaredLostDateTime) }
+
+    # get loans for the patron and assert properties
+    Given path 'circulation', 'loans'
+    And param query = '(userId==' + userId + ')'
+    When method GET
+    Then status 200
+    And match response.totalRecords == 2
+    And match response.loans[0].item.barcode == '555500'
+    And match response.loans[0].item.status.name == 'Declared lost'
+    And match response.loans[1].item.barcode == '555501'
+    And match response.loans[1].item.status.name == 'Declared lost'
+
+    * eval sleep(6000)
+
+    # assert patron blocks properties are available
+    Given path 'automated-patron-blocks', userId
+    When method GET
+    Then status 200
+    And match response.automatedPatronBlocks[0].blockBorrowing == true
+    And match response.automatedPatronBlocks[0].message == conditionsMessage
+    And match response.automatedPatronBlocks[0].patronBlockConditionId == conditionId
