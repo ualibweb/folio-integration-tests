@@ -220,7 +220,7 @@ Feature: Loans tests
     * call read('classpath:domain/mod-circulation/features/util/initData.feature@PostItem') { extItemBarcode: '555501', extItemId: #(itemId2) }
     * call read('classpath:domain/mod-circulation/features/util/initData.feature@PostPolicies')
     * call read('classpath:domain/mod-circulation/features/util/initData.feature@PostGroup')
-    * call read('classpath:domain/mod-circulation/features/util/initData.feature@PostUser') { extUserBarcode: userBarcode, extUserId: #(userId) }
+    * call read('classpath:domain/mod-circulation/features/util/initData.feature@PostUser') { extUserBarcode: #(userBarcode), extUserId: #(userId) }
 
     # post owner associated with service point
     * call read('classpath:domain/mod-circulation/features/util/initData.feature@PostOwner')
@@ -232,7 +232,7 @@ Feature: Loans tests
     * call read('classpath:domain/mod-circulation/features/util/initData.feature@PostBlockLimits') { conditionId: #(conditionId), limitsValue: 1 }
 
     # checkOut the first item
-    * def checkOutResult = call read('classpath:domain/mod-circulation/features/util/initData.feature@PostCheckOut') { extCheckOutUserBarcode: userBarcode, extCheckOutItemBarcode: '555500' }
+    * def checkOutResult = call read('classpath:domain/mod-circulation/features/util/initData.feature@PostCheckOut') { extCheckOutUserBarcode: #(userBarcode), extCheckOutItemBarcode: '555500' }
     * def loanId = checkOutResult.response.id
     * def declaredLostDateTime = call read('classpath:domain/mod-circulation/features/util/get-time-now-function.js')
 
@@ -246,7 +246,7 @@ Feature: Loans tests
     And match response.automatedPatronBlocks[0] == '#notpresent'
 
     # checkOut the second item
-    * def checkOutResult = call read('classpath:domain/mod-circulation/features/util/initData.feature@PostCheckOut') { extCheckOutUserBarcode: userBarcode, extCheckOutItemBarcode: '555501' }
+    * def checkOutResult = call read('classpath:domain/mod-circulation/features/util/initData.feature@PostCheckOut') { extCheckOutUserBarcode: #(userBarcode), extCheckOutItemBarcode: '555501' }
     * def loanId = checkOutResult.response.id
     * def declaredLostDateTime = call read('classpath:domain/mod-circulation/features/util/get-time-now-function.js')
 
