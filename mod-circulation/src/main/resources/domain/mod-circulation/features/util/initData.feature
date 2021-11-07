@@ -129,6 +129,7 @@ Feature: init data for mod-circulation
 
     * def itemEntityRequest = read('samples/item/item-entity-request.json')
     * itemEntityRequest.barcode = extItemBarcode
+    * itemEntityRequest.id = karate.get('extItemId', intItemId)
     * itemEntityRequest.materialType.id = karate.get('extMaterialTypeId', intMaterialTypeId)
     * itemEntityRequest.id = karate.get('extItemId', intItemId)
     Given path 'inventory', 'items'
