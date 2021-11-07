@@ -16,14 +16,13 @@ Feature: Loans tests
     * def patronPolicyId = call uuid1
     * def requestPolicyId = call uuid1
     * def groupId = call uuid1
-    * def userId = call uuid1
     * def userBarcode = random(100000)
     * def checkOutByBarcodeId = call uuid1
     * def parseObjectToDate = read('classpath:domain/mod-circulation/features/util/parse-object-to-date-function.js')
 
   Scenario: When patron and item id's entered at checkout, post a new loan using the circulation rule matched
-    * def extUserId = call uuid1
 
+    * def extUserId = call uuid1
     * def itemId = call uuid1
     * call read('classpath:domain/mod-circulation/features/util/initData.feature@PostInstance')
     * call read('classpath:domain/mod-circulation/features/util/initData.feature@PostServicePoint')
@@ -93,6 +92,7 @@ Feature: Loans tests
     * def extItemBarcode1 = random(10000)
     * def extItemBarcode2 = random(10000)
     * def extUserBarcode = random(100000)
+    * def extUserId = call uuid1
 
     # post items
     * call read('classpath:domain/mod-circulation/features/util/initData.feature@PostInstance')
@@ -103,7 +103,7 @@ Feature: Loans tests
     * call read('classpath:domain/mod-circulation/features/util/initData.feature@PostItem') { extItemBarcode: #(extItemBarcode2) }
     * call read('classpath:domain/mod-circulation/features/util/initData.feature@PostPolicies')
     * call read('classpath:domain/mod-circulation/features/util/initData.feature@PostGroup')
-    * call read('classpath:domain/mod-circulation/features/util/initData.feature@PostUser') { extUserBarcode: #(extUserBarcode) }
+    * call read('classpath:domain/mod-circulation/features/util/initData.feature@PostUser') { extUserBarcode: #(extUserBarcode), extUserId: #(extUserId) }
 
     # checkOut the first item
     * def checkOutResponse1 = call read('classpath:domain/mod-circulation/features/util/initData.feature@PostCheckOut') { extCheckOutUserBarcode: #(extUserBarcode), extCheckOutItemBarcode: #(extItemBarcode1) }
@@ -112,7 +112,7 @@ Feature: Loans tests
 
     # Get a paged collection of patron
     Given path 'circulation', 'loans'
-    And param query = '(userId=="' + userId + '")'
+    And param query = '(userId=="' + extUserId + '")'
     When method GET
     Then status 200
     And match response == { totalRecords: #present, loans: #present }
@@ -285,6 +285,7 @@ Feature: Loans tests
     * def itemId2 = call uuid1
     * def conditionId = '72b67965-5b73-4840-bc0b-be8f3f6e047e'
     * def conditionsMessage = 'You already lost an item!'
+    * def extUserId = call uuid1
     * def sleep = function(millis){ java.lang.Thread.sleep(millis) }
 
     # post two items
@@ -296,7 +297,7 @@ Feature: Loans tests
     * call read('classpath:domain/mod-circulation/features/util/initData.feature@PostItem') { extItemBarcode: '555501', extItemId: #(itemId2) }
     * call read('classpath:domain/mod-circulation/features/util/initData.feature@PostPolicies')
     * call read('classpath:domain/mod-circulation/features/util/initData.feature@PostGroup')
-    * call read('classpath:domain/mod-circulation/features/util/initData.feature@PostUser') { extUserBarcode: #(userBarcode), extUserId: #(userId) }
+    * call read('classpath:domain/mod-circulation/features/util/initData.feature@PostUser') { extUserBarcode: #(userBarcode), extUserId: #(extUserId) }
 
     # post owner associated with service point
     * call read('classpath:domain/mod-circulation/features/util/initData.feature@PostOwner')
@@ -316,7 +317,7 @@ Feature: Loans tests
     * call read('classpath:domain/mod-circulation/features/util/initData.feature@DeclareItemLost') { servicePointId: #(servicePointId), loanId: #(loanId), declaredLostDateTime:#(declaredLostDateTime) }
 
     # assert patron blocks properties are not available
-    Given path 'automated-patron-blocks', userId
+    Given path 'automated-patron-blocks', extUserId
     When method GET
     Then status 200
     And match response.automatedPatronBlocks[0] == '#notpresent'
@@ -331,7 +332,7 @@ Feature: Loans tests
 
     # get loans for the patron and assert properties
     Given path 'circulation', 'loans'
-    And param query = '(userId==' + userId + ')'
+    And param query = '(userId==' + extUserId + ')'
     When method GET
     Then status 200
     And match response.totalRecords == 2
@@ -343,7 +344,7 @@ Feature: Loans tests
     * eval sleep(6000)
 
     # assert patron blocks properties are available
-    Given path 'automated-patron-blocks', userId
+    Given path 'automated-patron-blocks', extUserId
     When method GET
     Then status 200
     And match response.automatedPatronBlocks[0].blockBorrowing == true
