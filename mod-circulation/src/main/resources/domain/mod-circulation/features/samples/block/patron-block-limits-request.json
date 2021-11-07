@@ -1,0 +1,6 @@
+{
+  "patronGroupId": "#(groupId)",
+  "conditionId": "",
+  "value": 1,
+  "id": "#(blockLimitsId)"
+}
