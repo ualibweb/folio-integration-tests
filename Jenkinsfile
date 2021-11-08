@@ -28,7 +28,7 @@ pipeline {
           jdk: 'openjdk-8-jenkins-slave-all',
           maven: 'maven3-jenkins-slave-all',
           mavenSettingsConfig: 'folioci-maven-settings') {
-            sh 'mvn -DskipTests clean install'
+            sh 'mvn clean install'
         }
       }
     }
