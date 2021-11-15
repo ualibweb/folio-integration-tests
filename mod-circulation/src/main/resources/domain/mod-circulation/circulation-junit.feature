@@ -10,6 +10,7 @@ Feature: mod-circulation integration tests
       | 'mod-circulation-storage' |
       | 'mod-inventory'           |
       | 'mod-inventory-storage'   |
+      | 'mod-patron-blocks'       |
 
     * table adminAdditionalPermissions
       | name |
