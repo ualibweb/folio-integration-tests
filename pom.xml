@@ -88,6 +88,7 @@
         <version>${maven.surefire.version}</version>
         <configuration>
           <testFailureIgnore>true</testFailureIgnore>
+          <useSystemClassLoader>false</useSystemClassLoader>
         </configuration>
       </plugin>
     </plugins>
