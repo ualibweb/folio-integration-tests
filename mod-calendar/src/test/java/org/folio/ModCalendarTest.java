@@ -7,16 +7,17 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-public class ModCalendarTests extends TestBase {
-  private static final String TEST_BASE_PATH = "classpath:vega/mod-calendar/features/";
+public class ModCalendarTest extends TestBase {
 
-  public ModCalendarTests() {
+  private static final String TEST_BASE_PATH = "classpath:bama/mod-calendar/features/";
+
+  public ModCalendarTest() {
     super(new TestIntegrationService(new TestModuleConfiguration(TEST_BASE_PATH)));
   }
 
   @BeforeAll
   public void setup() {
-    runFeature("classpath:vega/mod-calendar/calendar-junit.feature");
+    runFeature("classpath:bama/mod-calendar/calendar-junit.feature");
   }
 
   @AfterAll
@@ -25,7 +26,7 @@ public class ModCalendarTests extends TestBase {
   }
 
   @Test
-  void calendarPeriodsTest() {
+  void testCalendarPeriods() {
     runFeatureTest("calendarPeriods");
   }
 }

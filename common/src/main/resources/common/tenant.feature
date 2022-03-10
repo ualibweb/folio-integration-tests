@@ -9,7 +9,7 @@ Feature: Tenants
     Given path '_/proxy/tenants'
     And header Content-Type = 'application/json'
     And header Accept = 'application/json'
-    And header x-okapi-token = okapitoken
+    # And header x-okapi-token = okapitoken
     And request { id: '#(__arg.tenant)', name: 'Test tenant', description: 'Tenant for test purpose' }
     When method POST
     Then status 201
@@ -29,7 +29,7 @@ Feature: Tenants
     And param tenantParameters = 'loadSample=false,loadReference=' + loadReferenceRecords
     And header Content-Type = 'application/json'
     And header Accept = 'application/json'
-    And header x-okapi-token = okapitoken
+    # And header x-okapi-token = okapitoken
     And retry until responseStatus == 200
     And request enabledModules
     When method POST
@@ -40,6 +40,6 @@ Feature: Tenants
     Given path '_/proxy/tenants', __arg.tenant
     And header Content-Type = 'application/json'
     And header Accept = 'application/json'
-    And header x-okapi-token = okapitoken
+    # And header x-okapi-token = okapitoken
     When method DELETE
     Then status 204

@@ -1,0 +1,5 @@
+{
+  "karateRunner.tests.activityBarDisplayType": "Tree",
+  "karateRunner.tests.toTargetByGlob": "**/src/**/*.feature",
+  "karateRunner.karateRunner.default": "ModCalendarTest"
+}

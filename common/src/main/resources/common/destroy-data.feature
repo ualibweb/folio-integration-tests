@@ -21,7 +21,7 @@ Feature: destroy data for tenant
     And param purge = true
     And header Content-Type = 'application/json'
     And header Accept = 'application/json'
-    And header x-okapi-token = okapitoken
+    # And header x-okapi-token = okapitoken
     And retry until responseStatus == 200
     And request response
     When method POST
@@ -29,4 +29,3 @@ Feature: destroy data for tenant
 
   Scenario: delete tenant
     Given call read('classpath:common/tenant.feature@delete') { tenant: '#(testUser.tenant)'}
-
